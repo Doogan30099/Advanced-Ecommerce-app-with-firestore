@@ -31,7 +31,7 @@ const ProductDetails = () => {
 
 
 
-    const product = products?.find((p) => p.id === Number(id));
+    const product = products?.find((p) => p.id === String(id));
     if (!product) return <p className="text-center mt-5">Product not found.</p>;
 
 

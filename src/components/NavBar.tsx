@@ -2,9 +2,13 @@ import { Container, Nav, Navbar as BsNavbar, Badge } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { useAppSelector } from "../hooks/UseAppDispatch";
 import { useState } from "react";
+import LogoutButton from "../Buttons/LogoutButton";
+import { useAuth } from "../hooks/useAuth";
+import { User } from "../types/User";
 
 export default function NavBar() {
   const [expanded, setExpanded] = useState(false);
+  const { isAuthenticated } = useAuth();
 
   const cartCount = useAppSelector((state) =>
     state.cart.items.reduce((total, item) => total + item.quantity, 0)
@@ -20,8 +24,13 @@ export default function NavBar() {
       className="shadow-sm py-3 fixed-top"
     >
       <Container>
-        <BsNavbar.Brand as={Link} to="/">
-          Pj's Big Barn of Everything
+       
+        <BsNavbar.Brand as={Link} to="/"> 
+        {!isAuthenticated ?  (
+         <>Welcome to Pjs Big Barn of everything</> 
+        ) : (
+          <>Welcome {User.name} </>
+        )}
         </BsNavbar.Brand>
         <BsNavbar.Toggle aria-controls="main-navbar" />
         <BsNavbar.Collapse id="main-navbar">
@@ -55,6 +64,26 @@ export default function NavBar() {
                 </Badge>
               )}
             </Nav.Link>
+            <Nav.Link
+              as={Link}
+              to="/register"
+              className="mx-2"
+              onClick={() => setExpanded(false)}
+            >
+              Register
+            </Nav.Link>
+            {isAuthenticated ? (
+              <LogoutButton />
+            ) : (
+              <Nav.Link
+                as={Link}
+                to="/login"
+                className="mx-2"
+                onClick={() => setExpanded(false)}
+              >
+                Login
+              </Nav.Link>
+            )}
           </Nav>
         </BsNavbar.Collapse>
       </Container>
