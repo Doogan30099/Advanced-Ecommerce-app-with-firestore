@@ -43,6 +43,7 @@ const ProductDbPage = () => {
             <th>Category</th>
             <th>Stock</th>
             <th>Description</th>
+            <th>image</th>
           </tr>
         </thead>
         <tbody>
@@ -54,6 +55,7 @@ const ProductDbPage = () => {
               <td>{product.category}</td>
               <td>{product.stock}</td>
               <td>{product.description}</td>
+              <td>{product.image}</td>
             </tr>
           ))}
         </tbody>

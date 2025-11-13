@@ -19,6 +19,7 @@ import AddProduct from "./pages/AddProductPage";
 import AdminControls from "./pages/AdminPage";
 import ProductDbPage from "./pages/ProductDbPage";
 import UpdateProduct from "./pages/UpdateProduct";
+import OrdersPage from "./pages/OrdersPage";
 
 
 const App = () => {
@@ -27,9 +28,7 @@ const App = () => {
 
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      dispatch(setUser(user));
-    });
+    const unsubscribe = onAuthStateChanged(auth, (user) => dispatch(setUser(user)));
     return () => unsubscribe();
   }, [dispatch]);
 
@@ -50,6 +49,7 @@ const App = () => {
           <Route path="/admin" element={<AdminControls />} />
           <Route path="/product-db" element={<ProductDbPage />} />
           <Route path="/product-db/update-product/:id" element={<UpdateProduct />} />
+          <Route path="/orders" element={<OrdersPage />} />
         </Routes>
       </BrowserRouter>
       <Footer />

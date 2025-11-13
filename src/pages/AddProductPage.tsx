@@ -33,6 +33,13 @@ const AddProduct = () => {
     };
         const handleSubmit  = async (e: React.FormEvent) => {
             e.preventDefault();
+            
+            // Validate image URL
+            if (productData.image && !productData.image.startsWith('http')) {
+                alert("Image must be a valid URL starting with http:// or https://");
+                return;
+            }
+            
             try {
                 const docRef = await addDoc(collection(db, "products"), productData);
                 console.log("Document written with ID: ", docRef.id);
@@ -116,13 +123,16 @@ const AddProduct = () => {
                         <Form.Group className="mb-3" controlId="image">
                             <Form.Label>Image URL</Form.Label>
                             <Form.Control
-                                type="text"
+                                type="url"
                                 name="image"
                                 value={productData.image}
                                 onChange={handleChange}
-                                placeholder="Image URL"
+                                placeholder="https://example.com/image.jpg"
                                 required
                             />
+                            <Form.Text className="text-muted">
+                                Enter a full image URL starting with http:// or https:// (e.g., https://i.imgur.com/example.jpg)
+                            </Form.Text>
                         </Form.Group>
                         <Button variant="primary" type="submit">Add Product</Button>
                     </Form>

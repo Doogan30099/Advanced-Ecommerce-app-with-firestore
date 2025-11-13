@@ -1,13 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Container, Form, Button, Alert, Row, Col } from "react-bootstrap";
 import { useAppDispatch, useAppSelector } from "../hooks/UseAppDispatch";
 import { clearCart } from "../redux/cartSlice";
 import { useNavigate } from "react-router-dom";
+import { db } from "../context/firebaseConfig";
+import { collection, addDoc } from "firebase/firestore";
+import { useAuth } from "../hooks/useAuth";
 
 export const Checkout = () => {
   const dispatch = useAppDispatch();
   const cartItems = useAppSelector((state) => state.cart.items);
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -19,12 +23,25 @@ export const Checkout = () => {
   });
   const [success, setSuccess] = useState(false);
 
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      setFormData({
+        name: user.name || "",
+        email: user.email || "",
+        address: user.address || "",
+        city: user.city || "",
+        state: user.state || "",
+        zip: user.zipcode || "",
+      });
+    }
+  }, [isAuthenticated, user]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (cartItems.length === 0) {
@@ -32,14 +49,51 @@ export const Checkout = () => {
       return;
     }
 
-    dispatch(clearCart());
-    sessionStorage.removeItem("cart");
-    setSuccess(true);
+    // Calculate total amount
+    const totalAmount = cartItems.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
 
-    setTimeout(() => {
-      setSuccess(false);
-      navigate("/");
-    }, 4000);
+    try {
+      // Create order document with user reference
+      await addDoc(collection(db, "orders"), {
+        // User reference - CRITICAL for querying orders by user
+        userId: user?.id || "guest",
+        userName: formData.name,
+        userEmail: formData.email,
+        
+        // Shipping information
+        shippingAddress: {
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          zip: formData.zip,
+        },
+        
+        // Order details
+        items: cartItems,
+        totalAmount,
+        status: "pending",
+        
+        // Timestamps
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      // Clear cart and show success
+      dispatch(clearCart());
+      sessionStorage.removeItem("cart");
+      setSuccess(true);
+
+      setTimeout(() => {
+        setSuccess(false);
+        navigate("/");
+      }, 4000);
+    } catch (error) {
+      console.error("Error adding order to Firestore:", error);
+      alert("Failed to place order. Please try again.");
+    }
   };
 
   return (
